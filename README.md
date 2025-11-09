@@ -22,7 +22,7 @@ Este projeto implementa um coprocessador de zoom digital na FPGA, controlado por
 
 ## Arquitetura da Interface Hardware-Software
 
-A comunicação entre o processador ARM (HPS) e a lógica da FPGA (Coprocessador) é feita via Memória Mapeada (MMIO) através da ponte AXI Leve (Lightweight HPS-to-FPGA Bridge).
+A comunicação entre o processador ARM (HPS) e a lógica da FPGA (Coprocessador) é feita via Memória Mapeada (MMIO) através da ponte AXI.
 
 ### Fluxo de Controle
 
