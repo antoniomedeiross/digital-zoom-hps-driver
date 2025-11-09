@@ -192,15 +192,14 @@ Com isso, o programa manipula diretamente o hardware apenas escrevendo ou lendo 
 
 
 **Fluxo de Mapeamento:**
-```
-Endereço Físico     mmap2()      Endereço Virtual
-0xFF200000    ──────────────►   FPGA_VIRTUAL_ADDR
-    │                                   │
-    ├─ 0x0000 (offset)                  ├─ IMAGE_MEM_ptr
-    ├─ 0x8010 (offset)                  ├─ CONFIG_PIO_ptr
-    └─ 0x8000 (offset)                  └─ RESET_PIO_ptr
-```
 
+```mermaid
+graph TD
+    A(["Endereço Físico<br>0xFF200000"]) -->|"mmap2()"| B(["Endereço Virtual<br>FPGA_VIRTUAL_ADDR"])
+    B --> C(["IMAGE_MEM_ptr<br>(offset 0x0000)"])
+    B --> D(["RESET_PIO_ptr<br>(offset 0x8000)"])
+    B --> E(["CONFIG_PIO_ptr<br>(offset 0x8010)"])
+```
 
 ### Encerrando o Mapeamento
 
