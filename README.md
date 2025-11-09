@@ -176,6 +176,21 @@ Estas funções **não são expostas** ao código C, sendo utilizadas internamen
 - PIO Config: Offset `0x8010` (registrador de 32 bits)
 - PIO Start: Offset `0x8000` (registrador de 32 bits)
 
+### Como o Mapeamento Funciona
+
+1. O programa abre o arquivo especial `/dev/mem`, que dá acesso à memória física do sistema.  
+2. A função `mmap()` associa a faixa física `0xFF200000` (ponte Lightweight HPS–FPGA) a um endereço virtual no espaço do processo.  
+3. O Kernel configura a MMU e retorna esse endereço virtual, salvo em `FPGA_VIRTUAL_ADDR`.  
+4. A partir desse endereço base, o software acessa cada componente do coprocessador somando **offsets**:
+| Ponteiro             | Offset   | Função                          |
+   |----------------------|----------|----------------------------------|
+   | `IMAGE_MEM_ptr`      | `0x0000` | Memória On-Chip (imagem)         |
+   | `RESET_PIO_ptr`      | `0x8000` | Controle de reset/start          |
+   | `CONFIG_PIO_ptr`     | `0x8010` | Configuração da operação         |
+   
+Com isso, o programa manipula diretamente o hardware apenas escrevendo ou lendo valores em ponteiros normais, sem precisar de drivers específicos.
+
+
 **Fluxo de Mapeamento:**
 ```
 Endereço Físico     mmap2()      Endereço Virtual
@@ -186,7 +201,22 @@ Endereço Físico     mmap2()      Endereço Virtual
     └─ 0x8000 (offset)                  └─ RESET_PIO_ptr
 ```
 
+
+### Encerrando o Mapeamento
+
+A função `munmap()` é o “oposto” do `mmap()`.  
+Ela informa ao sistema operacional que o programa **não precisa mais acessar** aquele trecho de memória física.  
+Isso evita vazamentos de memória e garante que os recursos de hardware sejam liberados corretamente.
+
+O uso é simples:
+
+```c 
+munmap(fpga_virtual_addr, span);
+close(fd_mem);
+```
+
 ---
+
 
 ## Formato da Instrução (10 bits)
 
