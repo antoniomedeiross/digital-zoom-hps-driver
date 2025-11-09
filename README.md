@@ -86,10 +86,12 @@ Transfere imagem da memória DDR3 do HPS para a memória on-chip da FPGA.
 - Uso de `DSB` (Data Synchronization Barrier) para garantir conclusão das escritas
 
 **Fluxo de transferência:**
-```
-DDR3 (HPS) → LDR R3, [R4] → Registrador R3 → STR R3, [R5] → FPGA On-Chip Memory
-```
 
+```mermaid
+graph LR
+    A[DDR3 - HPS] -->|LDR R3, R4| B[Registrador R3]
+    B -->|STR R3, R5| C[FPGA On-Chip Memory]
+```
 **Parâmetros:**
 - `buffer_hps`: Ponteiro para buffer na memória do HPS
 - `tamanho`: Número de bytes (19.200 para imagens 160x120)
@@ -115,17 +117,17 @@ Zera toda a memória de imagem na FPGA (19.200 bytes).
 
 A ISA é exposta através de **9 funções semânticas** que encapsulam os opcodes do hardware:
 
-| Função | Opcode | Operação | Saída |
-|--------|--------|----------|-------|
-| `api_bypass()` | 0 | Sem zoom (1X) | 160x120 |
-| `api_media_0_5x()` | 11 | Redução por média | 80x60 |
-| `api_media_0_25x()` | 12 | Redução por média | 40x30 |
-| `api_vizinho_2x()` | 17 | Ampliação por vizinho | 320x240 |
-| `api_vizinho_4x()` | 18 | Ampliação por vizinho | 640x480 |
-| `api_vizinho_0_5x()` | 27 | Redução por vizinho | 80x60 |
-| `api_vizinho_0_25x()` | 28 | Redução por vizinho | 40x30 |
-| `api_replicacao_2x()` | 33 | Ampliação por replicação | 320x240 |
-| `api_replicacao_4x()` | 34 | Ampliação por replicação | 640x480 |
+| Função | Opcode | Decimal | Operação  | Saída |
+|--------|--------|---------|-----------|-------|
+| `api_bypass()` | 0000000000 | 0 | Sem zoom (1X) | 160x120 |
+| `api_media_0_5x()` | 0000001011 | 11 | Redução por média | 80x60 |
+| `api_media_0_25x()` | 0000001100 | 12 | Redução por média | 40x30 |
+| `api_vizinho_2x()` | 0000010001 | 17 | Ampliação por vizinho | 320x240 |
+| `api_vizinho_4x()` | 0000010010 | 18 | Ampliação por vizinho | 640x480 |
+| `api_vizinho_0_5x()` | 0000011011 | 27 | Redução por vizinho | 80x60 |
+| `api_vizinho_0_25x()` | 0000011100 | 28 | Redução por vizinho | 40x30 |
+| `api_replicacao_2x()` | 0000100001 | 33 | Ampliação por replicação | 320x240 |
+| `api_replicacao_4x()` | 0000100010 | 34 | Ampliação por replicação | 640x480 |
 
 #### Exemplo de Implementação (Assembly):
 ```assembly
@@ -219,19 +221,9 @@ close(fd_mem);
 
 ## Formato da Instrução (10 bits)
 
-A configuração enviada ao coprocessador segue o formato definido no Problema 1:
+A configuração enviada ao coprocessador segue o formato abaixo:
 
-```
-┌───────────────────────────────────────────────────────┐
-│ Bit 9-0: Código da operação (opcode)                  │
-│                                                        │
-│ Exemplos:                                              │
-│ 0b0000000000 (0)  → Bypass (1X)                       │
-│ 0b0000001011 (11) → Média 0.5X                        │
-│ 0b0000010001 (17) → Vizinho 2X                        │
-│ 0b0000100001 (33) → Replicação 2X                     │
-└───────────────────────────────────────────────────────┘
-```
+![diagrama do formato da instrução](imagens/opcode.png)
 
 ---
 
@@ -259,7 +251,7 @@ A configuração enviada ao coprocessador segue o formato definido no Problema 1
 Este projeto é compilado e executado **diretamente no sistema Linux embarcado na DE1-SoC**.
 
 ### 1. Preparar os Arquivos
-Baixe esse repositório, em seguida copie os seguintes arquivos para um diretório na sua placa DE1-SoC (ex: via `scp` ou pen drive):
+Baixe esse repositório, em seguida copie os seguintes arquivos para um diretório na sua placa DE1-SoC (ex: via `ssh` ou pen drive):
 
 1.  `main.c` (Código C principal)
 2.  `coprocessador.s` (API em Assembly)
