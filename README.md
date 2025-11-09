@@ -16,14 +16,9 @@ O coprocessador em Verilog (Etapa 1), que é controlado por este software, pode 
 
 ## Visão Geral do Sistema
 
-
-# Coprocessador de Zoom Digital - FPGA + HPS
-
-## Visão Geral do Sistema
-
 Este projeto implementa um coprocessador de zoom digital na FPGA, controlado por uma aplicação C rodando no HPS (Processador ARM). Esta arquitetura híbrida (Hardware-Software) permite que a lógica de controle e a interface com o usuário (executando no Linux embarcado) sejam flexíveis, enquanto o processamento pesado de pixels é delegado a um hardware dedicado (a ALU de zoom na FPGA), garantindo o desempenho em tempo real.
 
-![Fluxo do Sistema](caminho/para/sua/imagem_fluxo_do_sistema.png)
+![Fluxo do Sistema](diagrama.png)
 
 ## Arquitetura da Interface Hardware-Software
 
