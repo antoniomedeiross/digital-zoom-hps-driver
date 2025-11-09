@@ -17,29 +17,68 @@ O coprocessador em Verilog (Etapa 1), que é controlado por este software, pode 
 ## Visão Geral do Sistema
 
 
+# Coprocessador de Zoom Digital - FPGA + HPS
+
+## Visão Geral do Sistema
+
+Este projeto implementa um coprocessador de zoom digital na FPGA, controlado por uma aplicação C rodando no HPS (Processador ARM). Esta arquitetura híbrida (Hardware-Software) permite que a lógica de controle e a interface com o usuário (executando no Linux embarcado) sejam flexíveis, enquanto o processamento pesado de pixels é delegado a um hardware dedicado (a ALU de zoom na FPGA), garantindo o desempenho em tempo real.
+
+![Fluxo do Sistema](caminho/para/sua/imagem_fluxo_do_sistema.png)
+
 ## Arquitetura da Interface Hardware-Software
 
-A comunicação entre o processador ARM (HPS) e a lógica da FPGA (Coprocessador) é feita via **Memória Mapeada (MMIO)** através da ponte AXI Leve (Lightweight HPS-to-FPGA Bridge).
+A comunicação entre o processador ARM (HPS) e a lógica da FPGA (Coprocessador) é feita via Memória Mapeada (MMIO) através da ponte AXI Leve (Lightweight HPS-to-FPGA Bridge).
 
-O fluxo de controle é o seguinte:
+### Fluxo de Controle
 
-**`[App C (Usuário)]`** -> **`[API Assembly (Driver)]`** -> **`[Ponte AXI (MMIO)]`** -> **`[Periféricos FPGA]`**
+```
+[App C (Usuário)] -> [API Assembly (Driver)] -> [Ponte AXI (MMIO)] -> [Periféricos FPGA]
+```
 
-1.  **Aplicação em C (`main.c`):**
-    * Roda no Linux embarcado no HPS.
-    * Lida com a interface do usuário (menu, `scanf`).
-    * Chama as funções da API Assembly.
-2.  **API Assembly (`api_isa.s`):**
-    * Define a "ISA" do coprocessador.
-    * Recebe ponteiros e valores do C.
-    * Gerencia a memória (recebe o ponteiro para o arquivo `.bin` na DDR3, usa `mmap` para acessar a ponte).
-    * Executa as instruções ARM (`str`, `ldr`, `dmb`) para escrever/ler diretamente nos endereços físicos dos periféricos na FPGA.
-3.  **Periféricos FPGA (no Qsys):**
-    * **`onchip_memory2_1` (RAM Dual-Port):** Armazena a imagem fonte (160x120). É escrita pelo HPS (via `api_load_image`) e lida pela ALU.
-    * **`pio_10bits` (PIO Output):** Recebe o valor de configuração (`tipo_alg` + `fator_zoom`).
-    * **`pio_reset_alu` (PIO Output):** Recebe o pulso de trigger para iniciar o processamento.
-    * **`onchip_memory_bloco_ram` (RAM Dual-Port):** Armazena a imagem de saída (640x480). É escrita pela ALU e lida pelo `vga_driver`.
+### Componentes do Sistema
 
+#### 1. Aplicação em C (`main.c`)
+- Roda no Linux embarcado no HPS
+- Lida com a interface do usuário (menu, scanf)
+- Chama as funções da API Assembly (o "driver" do nosso coprocessador)
+
+#### 2. API Assembly (`api_isa.s`)
+- Define a "ISA" (Instruction Set Architecture) do nosso coprocessador
+- Recebe ponteiros e valores do C
+- Gerencia a memória (recebe o ponteiro para o arquivo .bin na DDR3, usa mmap para acessar a ponte)
+- Executa as instruções ARM (`str`, `ldr`, `dmb`) para escrever/ler diretamente nos endereços físicos dos periféricos na FPGA
+
+#### 3. Periféricos FPGA (no Qsys)
+- **`onchip_memory2_1`** (RAM Dual-Port): Armazena a imagem fonte (160x120). É escrita pelo HPS (via `api_load_image`) e lida pela ALU
+- **`pio_10bits`** (PIO Output): Recebe o valor de configuração (tipo_alg + fator_zoom). Este é o principal "registrador de controle" da nossa API
+- **`pio_reset_alu`** (PIO Output): Recebe o pulso de trigger para iniciar o processamento
+- **`onchip_memory_bloco_ram`** (RAM Dual-Port): Armazena a imagem de saída (640x480). É escrita pela ALU e lida pelo `vga_driver`
+
+## Evolução do Projeto: Do Problema 1 ao Problema 2
+
+Para construir a arquitetura final, foi necessário realizar uma migração significativa do design original (Problema 1), que era 100% em hardware e controlado por botões físicos.
+
+### Migração do Controle (De Botões Físicos para API Assembly)
+
+A mudança mais crítica foi substituir o controle físico por um controle lógico via software. Isso foi um requisito fundamental da Etapa 2, que pedia uma API para substituir as operações de chaves e botões.
+
+| Característica | ANTES (Problema 1 / `main.v`) | DEPOIS (Problema 2 / `ghrd_top.v`) |
+|----------------|-------------------------------|-------------------------------------|
+| **Módulo de Controle** | `botoes_module` | `soc_system u0 (HPS + PIOs)` |
+| **Fonte do Controle** | `input but_zoom_in`<br>`input but_zoom_out`<br>`input [7:0] switches` | `wire [9:0] saida_pio`<br>`wire start_alu_hps` |
+| **Conexão com a ALU** | `.zoom_enable(prop_zoom)`<br>`.tipo_alg(switches[6:3])` | `.control_data_in(saida_pio)`<br>`.reset(reset_alu_hps)` |
+| **Quem decide?** | O usuário, apertando botões físicos | O Processador HPS, escrevendo dados no PIO |
+
+O código reflete isso: a ALU não escuta mais os botões, mas sim os 'wires' `saida_pio` e `reset_alu_hps`, que são controlados pela nossa API Assembly.
+
+### Migração da Fonte da Imagem (De ROM Estática para RAM Dinâmica)
+
+O segundo desafio era o requisito da Etapa 3 de carregar uma imagem de um arquivo BITMAP. O design original (Problema 1) usava uma ROM (`ram rom_inst`) inicializada com um arquivo .mif, tornando impossível carregar uma imagem dinamicamente.
+
+- **ANTES**: A ALU lia de uma `ram rom_inst` definida em Verilog
+- **DEPOIS**: A `ram rom_inst` foi removida. A ALU agora se conecta à `onchip_memory2_1` dentro do `soc_system`
+
+Esta memória On-Chip é Dual-Port, o que significa que o HPS (nosso software C) pode escrever a imagem BITMAP nela, enquanto a ALU (nosso hardware Verilog) pode ler dela para fazer o processamento. Isso resolveu perfeitamente o requisito de carregamento dinâmico de imagens.
 
 
 ## API da ISA em Assembly
