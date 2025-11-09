@@ -202,8 +202,8 @@ graph TD
 ```
 
 ### Encerrando o Mapeamento
-
-A função `munmap()` é o “oposto” do `mmap()`.  
+Ao final da execução do programa, é necessário liberar a região mapeada e desfazer a associação entre os espaços de endereçamento virtual e físico.
+A função `munmap()` realiza essa tarefa, sendo o “oposto” do `mmap()`.
 Ela informa ao sistema operacional que o programa **não precisa mais acessar** aquele trecho de memória física.  
 Isso evita vazamentos de memória e garante que os recursos de hardware sejam liberados corretamente.
 
