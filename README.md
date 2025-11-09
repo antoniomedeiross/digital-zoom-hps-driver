@@ -185,7 +185,7 @@ Estas funções **não são expostas** ao código C, sendo utilizadas internamen
 | Ponteiro             | Offset   | Função                          |
    |----------------------|----------|----------------------------------|
    | `IMAGE_MEM_ptr`      | `0x0000` | Memória On-Chip (imagem)         |
-   | `RESET_PIO_ptr`      | `0x8000` | Controle de reset/start          |
+   | `RESET_PIO_ptr`      | `0x8000` | Controle de start                |
    | `CONFIG_PIO_ptr`     | `0x8010` | Configuração da operação         |
    
 Com isso, o programa manipula diretamente o hardware apenas escrevendo ou lendo valores em ponteiros normais, sem precisar de drivers específicos.
