@@ -301,4 +301,21 @@ No terminal da DE1-SoC, navegue até o diretório dos arquivos e execute:
 
 ```bash
 # Compila o C e o Assembly juntos, linkando-os e roda o executável em seguida
-make run 
+make run
+```
+## Referências
+
+### Documentação Técnica
+- [DE1-SoC User Manual](https://www.terasic.com.tw/cgi-bin/page/archive_download.pl?Language=English&No=836&FID=cd9c7dc7f2e7e3d4d59b4441ff49129)
+- [Cyclone V HPS Technical Reference Manual](https://www.intel.com/content/www/us/en/docs/programmable/683126/21-2/hard-processor-system-technical-reference.html)
+- [ARM Cortex-A9 Technical Reference Manual](https://developer.arm.com/documentation/ddi0388/latest/)
+- [Linux Device Drivers (mmap)](https://www.kernel.org/doc/html/latest/driver-api/device-io.html)
+
+### Tutoriais e Exemplos
+- [University Program DE1-SoC Computer](https://www.fpgaacademy.org/boards.html)
+- [HPS-to-FPGA Bridge Example](https://rocketboards.org/foswiki/Documentation/EmbeddedLinuxBeginnerSGuide)
+- [FPGA4Student - Image Processing](https://www.fpga4student.com/2016/11/image-processing-on-fpga-verilog.html)
+- [OpenCores. *Projects – Processor Category*](https://opencores.org/projects?category=Processor&expanded=Processor)
+  
+> Observação: essas referências foram consultadas como base teórica, inspiração ou comparação para este projeto.
+---
