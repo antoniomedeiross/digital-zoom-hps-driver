@@ -7,7 +7,7 @@ set_global_assignment -name FAMILY "Cyclone V"
 set_global_assignment -name DEVICE 5CSEMA5F31C6
 set_global_assignment -name TOP_LEVEL_ENTITY ghrd_top
 set_global_assignment -name ORIGINAL_QUARTUS_VERSION 13
-set_global_assignment -name LAST_QUARTUS_VERSION "23.1std.0 Lite Edition"
+set_global_assignment -name LAST_QUARTUS_VERSION "20.1.0 Lite Edition"
 set_global_assignment -name PROJECT_CREATION_TIME_DATE "MON JUN 17 20:35:29 2013"
 set_global_assignment -name DEVICE_FILTER_PACKAGE FBGA
 
@@ -986,7 +986,6 @@ set_instance_assignment -name GLOBAL_SIGNAL OFF -to u0|hps_0|hps_io|border|hps_s
 set_instance_assignment -name ENABLE_BENEFICIAL_SKEW_OPTIMIZATION_FOR_NON_GLOBAL_CLOCKS ON -to u0|hps_0|hps_io|border|hps_sdram_inst -tag __hps_sdram_p0
 set_instance_assignment -name PLL_COMPENSATION_MODE DIRECT -to u0|hps_0|hps_io|border|hps_sdram_inst|pll0|fbout -tag __hps_sdram_p0
 set_global_assignment -name VERILOG_FILE coprocessador/vga_driver.v
-set_global_assignment -name VERILOG_FILE coprocessador/main.v
 set_global_assignment -name VERILOG_FILE coprocessador/clk_divider.v
 set_global_assignment -name VERILOG_FILE coprocessador/alu_algoritmos.v
 set_global_assignment -name QIP_FILE ip/altsource_probe/hps_reset.qip
@@ -995,7 +994,6 @@ set_global_assignment -name VERILOG_FILE ip/edge_detect/altera_edge_detector.v
 set_global_assignment -name QIP_FILE soc_system/synthesis/soc_system.qip
 set_global_assignment -name SDC_FILE soc_system_timing.sdc
 set_global_assignment -name VERILOG_FILE ghrd_top.v
-set_global_assignment -name QIP_FILE ram1port.qip
 set_global_assignment -name QIP_FILE blocoram.qip
 set_global_assignment -name PARTITION_NETLIST_TYPE SOURCE -section_id Top
 set_global_assignment -name PARTITION_FITTER_PRESERVATION_LEVEL PLACEMENT_AND_ROUTING -section_id Top
